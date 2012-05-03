@@ -1,0 +1,79 @@
+<?php
+/**
+ * Dwolla Payment Module for Magento > 1.5.0
+ *
+ * @category    Dwolla
+ * @package     Dwolla_DwollaPaymentModule
+ * @copyright   Copyright © 2012 Dwolla Inc. (http://www.dwolla.com)
+ * @autor   	Michael Schonfeld <michael@dwolla.com>
+ * @version   	2.0.0alpha
+ * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ */
+
+// Get User Configuration
+$dwollaId = Mage::getStoreConfig('payment/dwollaPaymentModule/dwollaId');
+$apiKey = Mage::getStoreConfig('payment/dwollaPaymentModule/dwollaApiKey');
+$apiSecret = Mage::getStoreConfig('payment/dwollaPaymentModule/dwollaApiSecret');
+$testMode = Mage::getStoreConfig('payment/dwollaPaymentModule/dwollaTestMode');
+
+// Make sure we have all the information we need
+// before we continue
+if(!$dwollaId || !$apiKey || !$apiSecret) {
+	echo "The Dwolla Gateway seems to be misconfigured. Please use another payment method.";
+	break;
+}
+
+// Grab the user's order
+$magOrderId = Mage::getSingleton('checkout/session')->getLastRealOrderId();
+$order = Mage::getModel('sales/order')->loadByIncrementId($magOrderId);
+
+$items = array();
+foreach($order->getItemsCollection() as $item) {
+	$items[] = array(
+		'Description'	=> $item->getSku() . ': ' . ($item->getDescription() ? $item->getDescription() : 'N/A'),
+		'Name'			=> $item->getName(),
+		'Price'			=> $item->getPrice(),
+		'Quantity'		=> $item->getQtyToShip()
+	);
+}
+
+// Generate a checkout ID from Dwolla
+$dwollaJson = array(
+	'key'		=> $apiKey,
+	'secret'	=> $apiSecret,
+	'callback'	=> 'http://www.schonfeld.org/dwolla/cb.php',
+	'redirect'	=> Mage::getUrl('dwollaPaymentModule/payment/response', array('_secure' => true)),
+	'orderId'	=> $magOrderId,
+	'test'		=> $testMode ? 'true' : 'false',
+	'purchaseOrder'	=> array(
+		'destinationId' => $dwollaId,
+		'discount'		=> $order->getDiscountAmount(),
+		'shipping'		=> $order->getShippingAmount(),
+		'tax'			=> $order->getTaxAmount(),
+		'total'			=> $order->getGrandTotal(),
+		'orderItems'	=> $items
+	)
+);
+
+$ch = curl_init("https://www.dwolla.com/payment/request");
+curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json")); 
+curl_setopt($ch, CURLOPT_POST, 1);
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($dwollaJson));
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+$output = json_decode(curl_exec($ch), TRUE);
+curl_close($ch);
+$dwollaUrl = "https://www.dwolla.com/payment/checkout/{$output['CheckoutId']}";;
+
+// Redirect to Dwolla's off-site payment gateway
+header("Location: {$dwollaUrl}");
+?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>Redirecting to Dwolla</title>
+<meta http-equiv="REFRESH" content="0;url=<?php echo $dwollaUrl; ?>"></HEAD>
+<BODY>
+Redirecting you to Dwolla Off-Site Gateway now. Click <a href="<?php echo $dwollaUrl; ?>">here</a> to go there manually. 
+</BODY>
+</HTML>
+

@@ -1,0 +1,11 @@
+<config>
+    <modules>
+        <Dwolla_DwollaPaymentModule>
+            <active>true</active>
+            <codePool>local</codePool>
+            <depends>
+                <Mage_Payment />
+            </depends>
+        </Dwolla_DwollaPaymentModule>
+    </modules>
+</config>
