@@ -6,7 +6,7 @@
  * @package     Dwolla_DwollaPaymentModule
  * @copyright   Copyright © 2012 Dwolla Inc. (http://www.dwolla.com)
  * @autor   	Michael Schonfeld <michael@dwolla.com>
- * @version   	2.0.0alpha
+ * @version   	2.0.0beta
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -29,19 +29,20 @@ $order = Mage::getModel('sales/order')->loadByIncrementId($magOrderId);
 
 $items = array();
 foreach($order->getItemsCollection() as $item) {
-	$items[] = array(
-		'Description'	=> $item->getSku() . ': ' . ($item->getDescription() ? $item->getDescription() : 'N/A'),
-		'Name'			=> $item->getName(),
-		'Price'			=> $item->getPrice(),
-		'Quantity'		=> $item->getQtyToShip()
-	);
+	if($item->getQtyToShip() > 0) {
+		$items[] = array(
+			'Description'	=> $item->getSku() . ': ' . ($item->getDescription() ? $item->getDescription() : 'N/A'),
+			'Name'			=> $item->getName(),
+			'Price'			=> $item->getPrice(),
+			'Quantity'		=> $item->getQtyToShip()
+		);
+	}
 }
 
-// Generate a checkout ID from Dwolla
+// Being generating a Dwolla Checkout ID
 $dwollaJson = array(
 	'key'		=> $apiKey,
 	'secret'	=> $apiSecret,
-	'callback'	=> 'http://www.schonfeld.org/dwolla/cb.php',
 	'redirect'	=> Mage::getUrl('dwollaPaymentModule/payment/response', array('_secure' => true)),
 	'orderId'	=> $magOrderId,
 	'test'		=> $testMode ? 'true' : 'false',
@@ -55,6 +56,7 @@ $dwollaJson = array(
 	)
 );
 
+// Request a new Checkout ID from Dwolla
 $ch = curl_init("https://www.dwolla.com/payment/request");
 curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json")); 
 curl_setopt($ch, CURLOPT_POST, 1);
@@ -62,6 +64,12 @@ curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($dwollaJson));
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 $output = json_decode(curl_exec($ch), TRUE);
 curl_close($ch);
+
+// Make sure we got a checkout ID
+if(!$output['CheckoutId']) {
+	echo "Something went wrong. Dwolla said: {$output['Message']}";
+	break;
+}
 $dwollaUrl = "https://www.dwolla.com/payment/checkout/{$output['CheckoutId']}";;
 
 // Redirect to Dwolla's off-site payment gateway
@@ -74,6 +82,9 @@ header("Location: {$dwollaUrl}");
 <meta http-equiv="REFRESH" content="0;url=<?php echo $dwollaUrl; ?>"></HEAD>
 <BODY>
 Redirecting you to Dwolla Off-Site Gateway now. Click <a href="<?php echo $dwollaUrl; ?>">here</a> to go there manually. 
+
+<script type="text/javascript">
+	window.location = '<?php echo $dwollaUrl; ?>';
+</script>
 </BODY>
 </HTML>
-
