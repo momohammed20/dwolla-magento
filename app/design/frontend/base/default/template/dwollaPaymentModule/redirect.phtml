@@ -6,7 +6,7 @@
  * @package     Dwolla_DwollaPaymentModule
  * @copyright   Copyright © 2012 Dwolla Inc. (http://www.dwolla.com)
  * @autor   	Michael Schonfeld <michael@dwolla.com>
- * @version   	2.0.0beta
+ * @version   	2.0.0alpha
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -39,10 +39,11 @@ foreach($order->getItemsCollection() as $item) {
 	}
 }
 
-// Being generating a Dwolla Checkout ID
+// Generate a checkout ID from Dwolla
 $dwollaJson = array(
 	'key'		=> $apiKey,
 	'secret'	=> $apiSecret,
+	'callback'	=> 'http://www.schonfeld.org/dwolla/cb.php',
 	'redirect'	=> Mage::getUrl('dwollaPaymentModule/payment/response', array('_secure' => true)),
 	'orderId'	=> $magOrderId,
 	'test'		=> $testMode ? 'true' : 'false',
@@ -56,7 +57,6 @@ $dwollaJson = array(
 	)
 );
 
-// Request a new Checkout ID from Dwolla
 $ch = curl_init("https://www.dwolla.com/payment/request");
 curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json")); 
 curl_setopt($ch, CURLOPT_POST, 1);
@@ -82,9 +82,6 @@ header("Location: {$dwollaUrl}");
 <meta http-equiv="REFRESH" content="0;url=<?php echo $dwollaUrl; ?>"></HEAD>
 <BODY>
 Redirecting you to Dwolla Off-Site Gateway now. Click <a href="<?php echo $dwollaUrl; ?>">here</a> to go there manually. 
-
-<script type="text/javascript">
-	window.location = '<?php echo $dwollaUrl; ?>';
-</script>
 </BODY>
 </HTML>
+

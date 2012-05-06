@@ -5,6 +5,7 @@
       <groups>
         <dwollaPaymentModule translate="label comment" module="paygate">
           <label>Dwolla</label>
+		  <comment><![CDATA[<a href="https://www.dwolla.com/applications/create" target="_blank">Click here to generate your Dwolla API credentials</a>]]></comment>
   		  <sort_order>670</sort_order>
           <frontend_type>text</frontend_type>
           <show_in_default>1</show_in_default>

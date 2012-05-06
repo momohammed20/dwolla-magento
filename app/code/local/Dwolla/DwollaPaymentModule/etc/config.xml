@@ -2,7 +2,7 @@
 <config>
   <modules>
     <Dwolla_DwollaPaymentModule>
-      <version>2.0.0</version>
+      <version>0.1.0</version>
     </Dwolla_DwollaPaymentModule>
   </modules>
   <global>
@@ -29,7 +29,7 @@
         <active>1</active>
         <dwollaTestMode>0</dwollaTestMode>
         <order_status>pending</order_status>
-        <title>Dwolla Off-Site Gateway</title>
+        <title>Dwolla Gateway</title>
         <payment_action>sale</payment_action>
         <allowspecific>0</allowspecific>
         <sort_order>1</sort_order>
