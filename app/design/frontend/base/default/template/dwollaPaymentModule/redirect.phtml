@@ -70,7 +70,7 @@ if(!$output['CheckoutId']) {
 	echo "Something went wrong. Dwolla said: {$output['Message']}";
 	break;
 }
-$dwollaUrl = "https://www.dwolla.com/payment/checkout/{$output['CheckoutId']}";;
+$dwollaUrl = "https://www.dwolla.com/payment/checkout/{$output['CheckoutId']}";
 
 // Redirect to Dwolla's off-site payment gateway
 header("Location: {$dwollaUrl}");
