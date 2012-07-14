@@ -43,7 +43,6 @@ foreach($order->getItemsCollection() as $item) {
 $dwollaJson = array(
 	'key'		=> $apiKey,
 	'secret'	=> $apiSecret,
-	'callback'	=> 'http://www.schonfeld.org/dwolla/cb.php',
 	'redirect'	=> Mage::getUrl('dwollaPaymentModule/payment/response', array('_secure' => true)),
 	'orderId'	=> $magOrderId,
 	'test'		=> $testMode ? 'true' : 'false',
