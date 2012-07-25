@@ -1,6 +1,12 @@
-Dwolla's Off-Site Gateway Extension for Magento Community edition
+dwolla-magento
 ================================================================
-Dwolla, 2012
+Dwolla / Michael Schonfeld, 2012
+
+Dwolla's Off-Site Gateway Extension for Magento Community Edition.
+
+Compatibility
+-----
+Magento CE >= 1.5
 
 Installation
 -----
